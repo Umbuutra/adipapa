@@ -1,0 +1,129 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+
+public class MainUI extends JFrame {
+    private PersonDAO personDAO;
+
+    // Komponen GUI
+    private JTextField nameField;
+    private JTextField ageField;
+    private JButton addButton;
+    private JButton deleteButton;
+    private JButton updateButton;
+    private JTable table;
+    private PersonTableModel tableModel;
+
+    public MainUI() {
+        // Inisialisasi komponen GUI dan atur layout
+        initializeUI();
+        // Inisialisasi objek PersonDAO
+        personDAO = new PersonDAO();
+        // Tampilkan data awal
+        refreshTable();
+
+        // Tambahkan listener untuk tombol tambah
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addPerson();
+            }
+        });
+
+        // Tambahkan listener untuk tombol hapus
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                deletePerson();
+            }
+        });
+
+        // Tambahkan listener untuk tombol perbarui
+        updateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updatePerson();
+            }
+        });
+
+        // Menutup koneksi database saat aplikasi ditutup
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                personDAO.closeConnection();
+            }
+        });
+    }
+
+    private void initializeUI() {
+        // Implementasi tampilan UI
+    }
+
+    private void refreshTable() {
+        // Implementasi refresh data dari database ke JTable
+        List<Person> people = personDAO.getAllPeople();
+        tableModel.setData(people);
+    }
+
+    private void addPerson() {
+        // Implementasi operasi tambah data
+        String name = nameField.getText();
+        int age = Integer.parseInt(ageField.getText());
+
+        Person newPerson = new Person();
+        newPerson.setName(name);
+        newPerson.setAge(age);
+
+        personDAO.addPerson(newPerson);
+
+        refreshTable();
+        clearFields();
+    }
+
+    private void deletePerson() {
+        // Implementasi operasi hapus data
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            int personId = (int) tableModel.getValueAt(selectedRow, 0);
+            personDAO.deletePerson(personId);
+            refreshTable();
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih baris terlebih dahulu.");
+        }
+    }
+
+    private void updatePerson() {
+        // Implementasi operasi perbarui data
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            int personId = (int) tableModel.getValueAt(selectedRow, 0);
+            String name = nameField.getText();
+            int age = Integer.parseInt(ageField.getText());
+
+            Person updatedPerson = new Person();
+            updatedPerson.setId(personId);
+            updatedPerson.setName(name);
+            updatedPerson.setAge(age);
+
+            personDAO.updatePerson(updatedPerson);
+
+            refreshTable();
+            clearFields();
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih baris terlebih dahulu.");
+        }
+    }
+
+    private void clearFields() {
+        nameField.setText("");
+        ageField.setText("");
+    }
+
+    public static void main(String[] args) {
+        // Jalankan aplikasi
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new MainUI().setVisible(true);
+            }
+        });
+    }
+}
